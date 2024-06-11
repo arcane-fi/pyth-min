@@ -30,21 +30,21 @@ pub struct PriceFeedMessage {
 }
 
 impl PriceFeedMessage {
-    /// Interpret a PriceFeedMessage from a byte slice (which must be exactly 88 bytes long with no
-    /// padding). This is useful if you want to read price/confidence with no checks for
-    /// verification or how recent the update was.
+    /// Interpret a PriceFeedMessage from a byte slice (which must be exactly 84 bytes long with no
+    /// padding, but is really 88 bytes after Rust struct padding). This is useful if you want to
+    /// read price/confidence with no checks for verification or how recent the update was.
     ///
     /// If you have fetched a "Price Feed Account" on chain, you probably want to get the data with
     ///
     /// `let data = &ctx.accounts.price.try_borrow_data()?[..];`
     ///
     /// and you can extract this message by reading bytes 41-129. Skip the first 8 bytes (Anchor
-    /// discriminator), the auhority (32 bytes), and the verification type (1 bytes). The end of the
-    /// message is also padding.
+    /// discriminator), the authority (32 bytes), and the verification type (1-2 bytes). The end of
+    /// the message is also padding.
     ///
-    /// `let message_bytes = &data[41..129];`
+    /// `let message_bytes = &data[41..125];` or `&data[42..126];`
     pub fn get_feed_from_bytes(v: &[u8]) -> PriceFeedMessage {
-        assert!(v.len() == std::mem::size_of::<PriceFeedMessage>());
+         assert!(v.len() == 84);
 
         let feed_id: FeedId = {
             let mut arr = [0u8; 32];
@@ -86,7 +86,7 @@ mod tests {
 
         // Skip the first 8 bytes (Anchor discriminator), the authority (32 bytes), and the
         // verification type (1 bytes). The end of the message might be padding.
-        let message_bytes = &bytes[41..129];
+        let message_bytes = &bytes[41..125];
         println!("{:?}", message_bytes);
 
         let message = PriceFeedMessage::get_feed_from_bytes(message_bytes);
@@ -107,8 +107,10 @@ mod tests {
 
         assert_eq!(message.exponent, -8); // f8ff ffff or bytes [248, 255, 255, 255]
         assert_eq!(message.publish_time, 1717782833); // 3149 6366 0000 0000 or bytes [49, 73, 99, 102, 0, 0, 0, 0]
-        assert_eq!(message.prev_publish_time, 1717782832);
-        assert_eq!(message.ema_price, 16863708300);
-        assert_eq!(message.ema_conf, 16979099);
+        assert_eq!(message.prev_publish_time, 1717782832); // 3049 6366 0000 0000 or bytes [140, 196, 39, 237, 3, 0, 0, 0]
+        assert_eq!(message.ema_price, 16863708300); // 8cc4 27ed 0300 0000 or bytes [155, 20, 3, 1, 0, 0, 0, 0]
+        assert_eq!(message.ema_conf, 16979099); // 9b14 0301 0000 0000 or bytes [221, 237, 30, 16, 0, 0, 0, 0, 0]
+        
+        // dded 1e10 0000 0000 remains for the posted slot
     }
 }
