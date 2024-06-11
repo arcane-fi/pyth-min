@@ -1,11 +1,13 @@
 [package]
 name = "pyth-min"
-version = "0.1.0"
+version = "0.1.1"
 description = "Minimal sdk for interacting with Pyth pull oracles on Solana"
-authors = ["Mithriac Labs"]
+readme = "../README.md"
+authors = ["Mithriac Labs <contact@psyoptions.io>"]
 repository = "https://github.com/mithraiclabs/pyth-min"
 license = "Apache-2.0"
 edition = "2021"
+keywords = ["solana", "anchor", "pyth"]
 
 [lib]
 crate-type = ["lib"]
