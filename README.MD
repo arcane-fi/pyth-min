@@ -15,7 +15,7 @@ pub struct Some_Instruction<'info> {
 Then simply borrow the data, minus the 8-byte Anchor discrminator:
 
 ```
-let data = &ctx.accounts.price_acc.try_borrow_data()?[8..];
+let data = &ctx.accounts.price_acc.try_borrow_data()?[..][8..];
 let price_v2 = PriceUpdateV2::get_price_update_v2_from_bytes(data);
 
 let price = price_v2.get_price_no_older_than(
