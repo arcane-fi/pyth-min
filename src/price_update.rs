@@ -132,9 +132,11 @@ impl PriceUpdateV2 {
     /// - Whether the price update has been verified
     ///
     /// It is therefore unsafe to use this function without any extra checks, as it allows for the possibility of using unverified or outdated price updates.
-    pub fn get_price_unchecked(&self, feed_id: &FeedId) -> Result<Price, GetPriceError> {
-        if self.price_message.feed_id != *feed_id {
-            return Err(GetPriceError::MismatchedFeedId);
+    pub fn get_price_unchecked(&self, feed_id: Option<&FeedId>) -> Result<Price, GetPriceError> {
+        if feed_id.is_some() {
+            if self.price_message.feed_id != *feed_id.unwrap() {
+                return Err(GetPriceError::MismatchedFeedId);
+            }
         }
 
         Ok(Price {
@@ -177,7 +179,7 @@ impl PriceUpdateV2 {
         &self,
         unix_timestamp: i64,
         maximum_age: u64,
-        feed_id: &FeedId,
+        feed_id: Option<&FeedId>,
         verification_level: VerificationLevel,
     ) -> Result<Price, GetPriceError> {
         if !self.verification_level.gte(verification_level) {
@@ -222,7 +224,7 @@ impl PriceUpdateV2 {
         &self,
         unix_timestamp: i64,
         maximum_age: u64,
-        feed_id: &FeedId,
+        feed_id: Option<&FeedId>,
     ) -> std::result::Result<Price, GetPriceError> {
         self.get_price_no_older_than_with_custom_verification_level(
             unix_timestamp,

@@ -3,7 +3,7 @@ name = "pyth-min"
 version = "0.1.0"
 description = "Minimal sdk for interacting with Pyth pull oracles on Solana"
 authors = ["Mithriac Labs"]
-repository = "https://github.com/mithraiclabs/pyth-crosschain-legacy"
+repository = "https://github.com/mithraiclabs/pyth-min"
 license = "Apache-2.0"
 edition = "2021"
 
