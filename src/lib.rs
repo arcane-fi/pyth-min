@@ -1,4 +1,7 @@
 pub mod messages;
+pub mod byte_utils;
+pub mod price_update;
+pub mod error;
 
 pub(crate) type Pubkey = [u8; 32];
 
