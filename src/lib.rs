@@ -1,7 +1,7 @@
-pub mod messages;
 pub mod byte_utils;
-pub mod price_update;
 pub mod error;
+pub mod messages;
+pub mod price_update;
 
 pub(crate) type Pubkey = [u8; 32];
 
@@ -41,5 +41,12 @@ pub mod pythnet {
     pub const PYTH_PID: Pubkey = [
         220, 229, 235, 225, 228, 156, 59, 159, 17, 76, 181, 84, 76, 80, 169, 158, 192, 214, 146,
         214, 63, 86, 121, 90, 224, 41, 172, 131, 217, 234, 139, 226,
+    ];
+
+    /// Official Pyth Oracle Program Id on Devnet/Mainnet
+    /// pubkey!("rec5EKMGg6MxZYaMdyBfgwp4d5rB9T1VQH5pJv5LtFJ");
+    pub const PYTH_FEED_OWNER: Pubkey = [
+        120, 158, 231, 23, 1, 188, 174, 90, 113, 201, 232, 176, 89, 205, 82, 89, 12, 109, 234, 24,
+        110, 13, 69, 16, 16, 84, 225, 20, 19, 25, 94, 53,
     ];
 }

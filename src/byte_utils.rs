@@ -1,5 +1,6 @@
 /// The discriminator of Price Feed Accounts on mainnet
 pub const DISCRIMINATOR_AS_HEX: &str = "22f123639d7ef4cd";
+pub const DISCRIMINATOR_AS_BYTES: &[i32; 8] = &[0x22, 0xF1, 0x23, 0x63, 0x9D, 0x7E, 0xF4, 0xCD];
 
 /// Bytes that will be a Pubkey when decoded (this crate has dependencies and therefore does not
 /// read Pubkeys)
