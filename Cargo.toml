@@ -1,6 +1,6 @@
 [package]
 name = "pyth-min"
-version = "0.1.1"
+version = "0.1.2"
 description = "Minimal sdk for interacting with Pyth pull oracles on Solana"
 readme = "README.MD"
 authors = ["Mithriac Labs <contact@psyoptions.io>"]
