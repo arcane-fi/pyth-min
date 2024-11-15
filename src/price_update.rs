@@ -187,10 +187,10 @@ impl PriceUpdateV2 {
         };
 
         let price = self.get_price_unchecked(feed_id)?;
-        if !price
+        if !(price
             .publish_time
             .saturating_add(maximum_age.try_into().unwrap())
-            >= unix_timestamp
+            >= unix_timestamp)
         {
             return Err(GetPriceError::PriceTooOld);
         }
