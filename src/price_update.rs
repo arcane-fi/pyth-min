@@ -361,4 +361,126 @@ mod tests {
 
         assert_eq!(message.posted_slot, 304991761);
     }
+
+    #[test]
+    fn test_get_price_no_older_than_valid_age() {
+        // Mock data setup
+        let write_authority = [0u8; 32];
+        let verification_level = VerificationLevel::Full;
+        let price_message = PriceFeedMessage {
+            price: 1000,
+            conf: 10,
+            exponent: -2,
+            publish_time: 1000,
+            feed_id: [0u8; 32],
+            prev_publish_time: 499,
+            ema_price: 42,
+            ema_conf: 4,
+        };
+        let posted_slot = 1;
+
+        let price_update = PriceUpdateV2 {
+            write_authority,
+            verification_level,
+            price_message,
+            posted_slot,
+        };
+
+        let unix_timestamp = 1500;
+        let maximum_age = 1000; // Price can be up to 1000 units old
+        let feed_id = None;
+        let required_verification_level = VerificationLevel::Partial { num_signatures: 1 };
+
+        let result = price_update.get_price_no_older_than_with_custom_verification_level(
+            unix_timestamp,
+            maximum_age,
+            feed_id,
+            required_verification_level,
+        );
+
+        assert_eq!(result.is_ok(), true);
+        assert_eq!(result.unwrap().price, 1000);
+    }
+
+    #[test]
+    fn test_get_price_no_older_than_expired() {
+        // Mock data setup
+        let write_authority = [0u8; 32];
+        let verification_level = VerificationLevel::Full;
+        let price_message = PriceFeedMessage {
+            price: 1000,
+            conf: 10,
+            exponent: -2,
+            publish_time: 500,
+            feed_id: [0u8; 32],
+            prev_publish_time: 499,
+            ema_price: 42,
+            ema_conf: 4,
+        };
+        let posted_slot = 1;
+
+        let price_update = PriceUpdateV2 {
+            write_authority,
+            verification_level,
+            price_message,
+            posted_slot,
+        };
+
+        let unix_timestamp = 2000;
+        let maximum_age = 1000; // Price can be up to 1000 units old
+        let feed_id = None;
+        let required_verification_level = VerificationLevel::Partial { num_signatures: 1 };
+
+        // Call the method and check if it fails with `PriceTooOld`
+        let result = price_update.get_price_no_older_than_with_custom_verification_level(
+            unix_timestamp,
+            maximum_age,
+            feed_id,
+            required_verification_level,
+        );
+
+        // Assert that the result is an error and it's `PriceTooOld`
+        assert_eq!(result.is_err(), true);
+        assert_eq!(result.unwrap_err(), GetPriceError::PriceTooOld);
+    }
+
+    #[test]
+    fn test_get_price_no_older_than_exact_age() {
+        // Mock data setup
+        let write_authority = [0u8; 32];
+        let verification_level = VerificationLevel::Partial { num_signatures: 1 };
+        let price_message = PriceFeedMessage {
+            price: 1000,
+            conf: 10,
+            exponent: -2,
+            publish_time: 1000,
+            feed_id: [0u8; 32],
+            prev_publish_time: 499,
+            ema_price: 42,
+            ema_conf: 4,
+        };
+        let posted_slot = 1;
+
+        let price_update = PriceUpdateV2 {
+            write_authority,
+            verification_level,
+            price_message,
+            posted_slot,
+        };
+
+        let unix_timestamp = 2000;
+        let maximum_age = 1000; // Price can be up to 1000 units old
+        let feed_id = None;
+        let required_verification_level = VerificationLevel::Partial { num_signatures: 1 };
+
+        let result = price_update.get_price_no_older_than_with_custom_verification_level(
+            unix_timestamp,
+            maximum_age,
+            feed_id,
+            required_verification_level,
+        );
+
+        assert_eq!(result.is_ok(), true);
+        assert_eq!(result.unwrap().price, 1000);
+    }
 }
