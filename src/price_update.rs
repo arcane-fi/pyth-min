@@ -73,6 +73,16 @@ pub struct Price {
     pub publish_time: i64,
 }
 
+/// A Pyth EMA price.
+/// The actual price is `(ema_price ± ema_conf)* 10^exponent`. `publish_time` may be used to check the recency of the price.
+#[derive(PartialEq, Debug, Clone, Copy)]
+pub struct EmaPrice {
+    pub ema_price: i64,
+    pub ema_conf: u64,
+    pub exponent: i32,
+    pub publish_time: i64,
+}
+
 impl PriceUpdateV2 {
     pub const LEN: usize = 8 + 32 + 2 + 32 + 8 + 8 + 4 + 8 + 8 + 8 + 8 + 8;
 
@@ -147,6 +157,21 @@ impl PriceUpdateV2 {
         })
     }
 
+    pub fn get_ema_price_unchecked(&self, feed_id: Option<&FeedId>) -> Result<EmaPrice, GetPriceError> {
+        if feed_id.is_some() {
+            if self.price_message.feed_id != *feed_id.unwrap() {
+                return Err(GetPriceError::MismatchedFeedId);
+            }
+        }
+
+        Ok(EmaPrice {
+            ema_price: self.price_message.ema_price,
+            ema_conf: self.price_message.ema_conf,
+            exponent: self.price_message.exponent,
+            publish_time: self.price_message.publish_time,
+        })
+    }
+
     /// Get a `Price` from a `PriceUpdateV2` account for a given `FeedId` no older than
     /// `maximum_age` with customizable verification level.
     ///
@@ -198,6 +223,29 @@ impl PriceUpdateV2 {
         Ok(price)
     }
 
+    pub fn get_ema_price_no_older_than_with_custom_verification_level(
+        &self,
+        unix_timestamp: i64,
+        maximum_age: u64,
+        feed_id: Option<&FeedId>,
+        verification_level: VerificationLevel,
+    ) -> Result<EmaPrice, GetPriceError> {
+        if !self.verification_level.gte(verification_level) {
+            return Err(GetPriceError::InsufficientVerificationLevel);
+        };
+
+        let ema_price = self.get_ema_price_unchecked(feed_id)?;
+        if !(ema_price
+            .publish_time
+            .saturating_add(maximum_age.try_into().unwrap())
+            >= unix_timestamp)
+        {
+            return Err(GetPriceError::PriceTooOld);
+        }
+
+        Ok(ema_price)
+    }
+
     /// Get a `Price` from a `PriceUpdateV2` account for a given `FeedId` no older than `maximum_age` with `Full` verification.
     ///
     /// # Example
@@ -227,6 +275,20 @@ impl PriceUpdateV2 {
         feed_id: Option<&FeedId>,
     ) -> std::result::Result<Price, GetPriceError> {
         self.get_price_no_older_than_with_custom_verification_level(
+            unix_timestamp,
+            maximum_age,
+            feed_id,
+            VerificationLevel::Full,
+        )
+    }
+
+    pub fn get_ema_price_no_older_than(
+        &self,
+        unix_timestamp: i64,
+        maximum_age: u64,
+        feed_id: Option<&FeedId>,
+    ) -> std::result::Result<EmaPrice, GetPriceError> {
+        self.get_ema_price_no_older_than_with_custom_verification_level(
             unix_timestamp,
             maximum_age,
             feed_id,
