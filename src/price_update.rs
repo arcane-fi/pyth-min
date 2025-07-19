@@ -209,7 +209,7 @@ impl PriceUpdateV2 {
     ) -> Result<Price, GetPriceError> {
         if !self.verification_level.gte(verification_level) {
             return Err(GetPriceError::InsufficientVerificationLevel);
-        };
+        }
 
         let price = self.get_price_unchecked(feed_id)?;
         if !(price
@@ -232,7 +232,7 @@ impl PriceUpdateV2 {
     ) -> Result<EmaPrice, GetPriceError> {
         if !self.verification_level.gte(verification_level) {
             return Err(GetPriceError::InsufficientVerificationLevel);
-        };
+        }
 
         let ema_price = self.get_ema_price_unchecked(feed_id)?;
         if !(ema_price
@@ -244,6 +244,30 @@ impl PriceUpdateV2 {
         }
 
         Ok(ema_price)
+    }
+
+    pub fn get_price_with_custom_verification_level(
+        &self,
+        feed_id: Option<&FeedId>,
+        verification_level: VerificationLevel,
+    ) -> Result<Price, GetPriceError> {
+        if !self.verification_level.gte(verification_level) {
+            return Err(GetPriceError::InsufficientVerificationLevel);
+        }
+
+        self.get_price_unchecked(feed_id)
+    }
+
+    pub fn get_ema_price_with_custom_verification_level(
+        &self,
+        feed_id: Option<&FeedId>,
+        verification_level: VerificationLevel,
+    ) -> Result<EmaPrice, GetPriceError> {
+        if !self.verification_level.gte(verification_level) {
+            return Err(GetPriceError::InsufficientVerificationLevel);
+        }
+
+        self.get_ema_price_unchecked(feed_id)
     }
 
     /// Get a `Price` from a `PriceUpdateV2` account for a given `FeedId` no older than `maximum_age` with `Full` verification.
